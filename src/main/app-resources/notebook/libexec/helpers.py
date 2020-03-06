@@ -62,12 +62,25 @@ def get_metadata(input_references, data_path):
         
     return products
 
+def group_analysis(df):
+    df['ordinal_type'] = 'NaN'
+    slave_date=df['startdate'].min()[:10]
+    master_date=df['startdate'].max()[:10]
+    for i in range(len(df)):
+    
+        if slave_date == df.iloc[i]['startdate'][:10]:
+            df.loc[i,'ordinal_type']='slave'
+    
+        elif master_date == df.iloc[i]['startdate'][:10]:
+            df.loc[i,'ordinal_type']='master'
+
+    return 
 def analyse(row, data_path):
     
     series = dict()
 
     series['local_path'] = os.path.join(data_path, row['identifier'], row['identifier'] + '.SAFE', 'manifest.safe')
-   
+    
     return pd.Series(series)
 
 def bbox_to_wkt(bbox):
@@ -78,6 +91,8 @@ def bbox_to_wkt(bbox):
 def pre_process(products, aoi, utm_zone, resolution='10.0', polarization=None, orbit_type=None, show_graph=False):
 
     #mygraph = GraphProcessor()
+    #if slave>1 or if master>1:
+    #Mosaic--> slice-assembly
     
     for index, product in products.iterrows():
 
@@ -202,8 +217,8 @@ def create_stack(products, show_graph=True):
     
     operator = 'ProductSet-Reader'
     parameters = get_operator_default_parameters(operator)
-    
-    parameters['fileList'] = ','.join([ '{}.dim'.format(n) for n in products.identifier.values])
+    print products.identifier.values
+    parameters['fileList'] = ','.join([ '{}.dim'.format(n) for n in products])
     
     node_id = 'ProductSet-Reader'
     source_node_id = ''
